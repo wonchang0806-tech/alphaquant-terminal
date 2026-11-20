@@ -70,7 +70,7 @@ def render_sidebar_auth_and_kis():
     """, unsafe_allow_html=True)
 
     if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="btn_logout"):
-        for k in ["authenticated", "user_id", "user_name", "user_role", "kis_client_session"]:
+        for k in ["authenticated", "user_id", "user_name", "user_role", "kis_client_session", "admin_portfolio_cache"]:
             if k in st.session_state:
                 del st.session_state[k]
         st.rerun()

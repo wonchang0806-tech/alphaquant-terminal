@@ -1,3 +1,19 @@
+import json
+
+def _restore_cloud_stock_lists():
+    try:
+        import streamlit as _st
+        for fn, key in [("custom_stocks.json", "CUSTOM_STOCKS_JSON"), ("excluded_stocks.json", "EXCLUDED_STOCKS_JSON")]:
+            if not os.path.exists(fn) and key in _st.secrets:
+                raw = _st.secrets[key]
+                data = json.loads(raw) if isinstance(raw, str) else raw
+                with open(fn, "w", encoding="utf-8") as wf:
+                    json.dump(data, wf, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+_restore_cloud_stock_lists()
+
 import html
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
