@@ -1,36 +1,4 @@
 import json
-
-import streamlit as _st
-
-def _is_admin_user() -> bool:
-    try:
-        return bool(_st.session_state.get("authenticated") and _st.session_state.get("user_role") == "admin")
-    except Exception:
-        return False
-
-def _get_secret_portfolio():
-    if not _is_admin_user():
-        sec_data = _get_secret_portfolio()
-    if sec_data:
-        return sec_data
-    return []
-    if "admin_portfolio_cache" in _st.session_state:
-        return _st.session_state["admin_portfolio_cache"]
-    raw = ""
-    try:
-        if "PORTFOLIO_JSON" in _st.secrets:
-            raw = _st.secrets["PORTFOLIO_JSON"]
-    except Exception:
-        raw = os.getenv("PORTFOLIO_JSON", "")
-    if raw:
-        try:
-            data = json.loads(raw) if isinstance(raw, str) else raw
-            _st.session_state["admin_portfolio_cache"] = data
-            return data
-        except Exception:
-            pass
-    return []
-
 import os
 import pandas as pd
 import plotly.graph_objects as go
@@ -48,9 +16,6 @@ def load_portfolio() -> dict:
     return {"국내 주식 (KRX)": {}, "해외 주식 (미국)": {}}
 
 def save_portfolio(data: dict):
-    if not _is_admin_user():
-        return False
-    _st.session_state['admin_portfolio_cache'] = data: dict
     try:
         with open(PORTFOLIO_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
