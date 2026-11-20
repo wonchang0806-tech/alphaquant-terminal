@@ -1,0 +1,15 @@
+# 환경변수 및 개인 API 키 파일 차단
+.env
+config.py
+.streamlit/secrets.toml
+
+# 개인 보유 포트폴리오 및 커스텀 종목 데이터 차단
+portfolio.json
+custom_stocks.json
+excluded_stocks.json
+
+# 파이썬 캐시 및 가상환경 폴더 차단
+__pycache__/
+*.py[cod]
+.venv/
+venv/
