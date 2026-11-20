@@ -3,6 +3,7 @@ import streamlit as st
 def apply_custom_styles():
     st.markdown("""
     <style>
+    .stAppToolbar, #MainMenu, header[data-testid='stHeader'] { display: none !important; }
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
         html, body, [class*="css"], .stMarkdown { font-family: 'Pretendard', sans-serif; }
         
