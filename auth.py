@@ -50,7 +50,6 @@ def check_login() -> bool:
                 else:
                     st.error("❌ 아이디 또는 비밀번호가 일치하지 않습니다.")
 
-        st.caption("💡 기본 초기 계정: 관리자 `admin` / `1234` · 지인 공유용 `guest` / `0000`")
     return False
 
 def render_sidebar_auth_and_kis():
