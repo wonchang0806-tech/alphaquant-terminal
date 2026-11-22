@@ -8,7 +8,7 @@ import streamlit as st
 @st.cache_data(ttl=300)
 def _fetch_market_indices(market_type: str):
     import yfinance as _yf
-    targets = [("??? (KOSPI)", "^KS11"), ("??? (NASDAQ)", "^IXIC")] if "??" in market_type else [("S&P 500", "^GSPC"), ("??? (NASDAQ)", "^IXIC")]
+    targets = [("코스피 (KOSPI)", "^KS11"), ("나스닥 (NASDAQ)", "^IXIC")] if "국내" in str(market_type) else [("S&P 500", "^GSPC"), ("나스닥 (NASDAQ)", "^IXIC")]
     results = []
     for label, sym in targets:
         try:
@@ -34,11 +34,14 @@ def _render_market_index_banner(market_type: str):
         color = "#10b981" if is_up else "#ef4444"
         col.markdown(
             f"""<div style="background:rgba(30,41,59,0.65);border:1px solid rgba(148,163,184,0.2);border-radius:10px;padding:10px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
-                <span style="color:#94a3b8;font-size:0.88rem;font-weight:600;">?? {label}</span>
+                <span style="color:#94a3b8;font-size:0.88rem;font-weight:600;">{label}</span>
                 <span><strong style="color:#f8fafc;font-size:1.05rem;margin-right:8px;">{val}</strong><span style="color:{color};font-weight:700;font-size:0.9rem;">{pct}</span></span>
             </div>""",
             unsafe_allow_html=True,
         )
+
+
+
 
 import yfinance as yf
 
@@ -323,6 +326,7 @@ current_tab = st.radio("메뉴 탭 이동", tab_options, horizontal=True, label_
 def smart_stock_selector(label_prefix: str, key_suffix: str):
     all_names = df["종목명"].tolist()
     default_idx = all_names.index(st.session_state.shared_selected_stock) if ("shared_selected_stock" in st.session_state and st.session_state.shared_selected_stock in all_names) else 0
+    _render_market_index_banner(selected_market)
     c_search, c_pick = st.columns([1.6, 2.4])
     with c_search:
         kw = st.text_input(f"🔍 {label_prefix} 검색", placeholder="종목명 입력...", key=f"kw_{key_suffix}")

@@ -22,7 +22,7 @@ def _has_real_holdings(data) -> bool:
     return False
 
 def _get_secret_portfolio() -> dict:
-    empty_pf = {"?? ?? (KRX)": {}, "?? ?? (??)": {}}
+    empty_pf = {"국내 주식 (KRX)": {}, "해외 주식 (미국)": {}}
     if not _is_admin_user():
         return empty_pf
     raw = None
@@ -43,7 +43,7 @@ def _get_secret_portfolio() -> dict:
     return empty_pf
 
 def load_portfolio() -> dict:
-    empty_pf = {"?? ?? (KRX)": {}, "?? ?? (??)": {}}
+    empty_pf = {"국내 주식 (KRX)": {}, "해외 주식 (미국)": {}}
     if not _is_admin_user():
         return empty_pf
     cached = st.session_state.get("admin_portfolio_cache")
@@ -157,13 +157,14 @@ def render_portfolio_and_radar_tab(df: pd.DataFrame, selected_market: str, curr_
             sel_tick = str(sel_row["티커"])
             existing = market_pf.get(sel_tick, {})
         with c_in2:
-            avg_price = st.number_input(
-                f"평균 매수가 ({curr_mark})",
-                min_value=0.0,
-                value=float(existing.get("avg_price", sel_row.get("현재가") or 0.0)),
-                step=100.0 if is_krw else 1.0,
-                key=f"pf_price_{sel_tick}"
-            )
+            if (curr_mark != "$") or ("국내" in str(selected_market)):
+                _avg_str = st.text_input(f"평균 매수가 ({curr_mark})", value=f"{int(round(float(float(existing.get('avg_price', sel_row.get('현재가') or 0.0))))):,}", key=f'pf_price_{sel_tick}')
+                try:
+                    avg_price = float(str(_avg_str).replace(",", "").strip())
+                except Exception:
+                    avg_price = float(float(existing.get('avg_price', sel_row.get('현재가') or 0.0)))
+            else:
+                avg_price = st.number_input(f"평균 매수가 ({curr_mark})", min_value=0.0, value=float(float(existing.get('avg_price', sel_row.get('현재가') or 0.0))), step=0.1, format="%.2f", key=f'pf_price_{sel_tick}')
         with c_in3:
             qty = st.number_input(
                 "보유 수량 (주)",
