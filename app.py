@@ -27,7 +27,8 @@ def _fetch_market_indices(market_type: str):
             results.append((label, "-", "0.00%", True))
     return results
 
-def _render_market_index_banner(market_type: str):
+def _render_market_index_banner():
+    market_type = st.session_state.get("_aq_market", "국내")
     idx_list = _fetch_market_indices(market_type)
     cols = st.columns(len(idx_list))
     for col, (label, val, pct, is_up) in zip(cols, idx_list):
@@ -39,6 +40,9 @@ def _render_market_index_banner(market_type: str):
             </div>""",
             unsafe_allow_html=True,
         )
+
+
+
 
 
 
@@ -129,6 +133,7 @@ def on_preset_change():
 
 st.sidebar.markdown("### ⚙️ 퀀트 컨트롤 센터")
 selected_market = st.sidebar.radio("분석 시장 선택", ["국내 주식 (KRX)", "해외 주식 (미국)"], key="selected_market_radio")
+st.session_state["_aq_market"] = selected_market
 
 if selected_market == "국내 주식 (KRX)":
     if kis_client_instance and getattr(kis_client_instance, "access_token", None):
@@ -326,7 +331,7 @@ current_tab = st.radio("메뉴 탭 이동", tab_options, horizontal=True, label_
 def smart_stock_selector(label_prefix: str, key_suffix: str):
     all_names = df["종목명"].tolist()
     default_idx = all_names.index(st.session_state.shared_selected_stock) if ("shared_selected_stock" in st.session_state and st.session_state.shared_selected_stock in all_names) else 0
-    _render_market_index_banner(selected_market)
+    _render_market_index_banner()
     c_search, c_pick = st.columns([1.6, 2.4])
     with c_search:
         kw = st.text_input(f"🔍 {label_prefix} 검색", placeholder="종목명 입력...", key=f"kw_{key_suffix}")
