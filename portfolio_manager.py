@@ -1,3 +1,5 @@
+import plotly.graph_objects as go
+import plotly.express as px
 import os
 import pandas as pd
 import streamlit as st
@@ -63,6 +65,9 @@ def load_portfolio() -> dict:
     return empty_pf
 
 def save_portfolio(data: dict):
+    if not _is_admin_user():
+        return False
+    st.session_state["admin_portfolio_cache"] = json.loads(json.dumps(data, ensure_ascii=False))
     try:
         with open(PORTFOLIO_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
