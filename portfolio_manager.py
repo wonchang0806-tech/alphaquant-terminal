@@ -1,10 +1,8 @@
 import json
 
-import streamlit as _st
-
 def _is_admin_user() -> bool:
     try:
-        return bool(_st.session_state.get("authenticated") and _st.session_state.get("user_role") == "admin")
+        return bool(st.session_state.get("authenticated") and st.session_state.get("user_role") == "admin")
     except Exception:
         return False
 
@@ -16,43 +14,48 @@ def _has_real_holdings(data) -> bool:
             return True
     return False
 
-def _get_secret_portfolio():
+def _get_secret_portfolio() -> dict:
     empty_pf = {"?? ?? (KRX)": {}, "?? ?? (??)": {}}
     if not _is_admin_user():
         return empty_pf
-    if "admin_portfolio_cache" in _st.session_state and _has_real_holdings(_st.session_state["admin_portfolio_cache"]):
-        return _st.session_state["admin_portfolio_cache"]
-    raw = ""
+    raw = None
     try:
-        if "PORTFOLIO_JSON" in _st.secrets:
-            raw = _st.secrets["PORTFOLIO_JSON"]
+        if "PORTFOLIO_JSON" in st.secrets:
+            raw = st.secrets["PORTFOLIO_JSON"]
     except Exception:
+        pass
+    if not raw:
         raw = os.getenv("PORTFOLIO_JSON", "")
     if raw:
         try:
-            data = json.loads(raw) if isinstance(raw, str) else raw
+            data = json.loads(raw) if isinstance(raw, str) else dict(raw)
             if _has_real_holdings(data):
-                _st.session_state["admin_portfolio_cache"] = data
                 return data
         except Exception:
             pass
     return empty_pf
 
-import os
-import pandas as pd
-import plotly.graph_objects as go
-import streamlit as st
-
-PORTFOLIO_FILE = "portfolio.json"
-
 def load_portfolio() -> dict:
+    empty_pf = {"?? ?? (KRX)": {}, "?? ?? (??)": {}}
+    if not _is_admin_user():
+        return empty_pf
+    cached = st.session_state.get("admin_portfolio_cache")
+    if _has_real_holdings(cached):
+        return cached
     if os.path.exists(PORTFOLIO_FILE):
         try:
-            with open(PORTFOLIO_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+            with open(PORTFOLIO_FILE, "r", encoding="utf-8") as _f:
+                _local = json.load(_f)
+                if _has_real_holdings(_local):
+                    st.session_state["admin_portfolio_cache"] = _local
+                    return _local
         except Exception:
             pass
-    return {"국내 주식 (KRX)": {}, "해외 주식 (미국)": {}}
+    sec_pf = _get_secret_portfolio()
+    if _has_real_holdings(sec_pf):
+        st.session_state["admin_portfolio_cache"] = sec_pf
+        return sec_pf
+    return empty_pf
 
 def save_portfolio(data: dict):
     try:
