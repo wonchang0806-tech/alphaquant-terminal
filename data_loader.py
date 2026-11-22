@@ -664,3 +664,26 @@ KRX_WIDE_CANDIDATES = [
 
 def scan_krx_wide_tenbaggers() -> pd.DataFrame:
     return fetch_market_data_parallel("국내 주식 (KRX)", KRX_WIDE_CANDIDATES)
+
+def _restore_cloud_stock_lists_v2():
+    try:
+        import os as _os, json as _json, streamlit as _st
+        for fn, key in [("custom_stocks.json", "CUSTOM_STOCKS_JSON"), ("excluded_stocks.json", "EXCLUDED_STOCKS_JSON")]:
+            need_restore = not _os.path.exists(fn)
+            if not need_restore:
+                try:
+                    with open(fn, "r", encoding="utf-8") as rf:
+                        cur = _json.load(rf)
+                    if not any(bool(v) for v in cur.values()):
+                        need_restore = True
+                except Exception:
+                    need_restore = True
+            if need_restore and key in _st.secrets:
+                raw = _st.secrets[key]
+                data = _json.loads(raw) if isinstance(raw, str) else raw
+                with open(fn, "w", encoding="utf-8") as wf:
+                    _json.dump(data, wf, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+_restore_cloud_stock_lists_v2()

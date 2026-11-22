@@ -4,6 +4,42 @@ from datetime import datetime
 import FinanceDataReader as fdr
 import pandas as pd
 import streamlit as st
+
+@st.cache_data(ttl=300)
+def _fetch_market_indices(market_type: str):
+    import yfinance as _yf
+    targets = [("??? (KOSPI)", "^KS11"), ("??? (NASDAQ)", "^IXIC")] if "??" in market_type else [("S&P 500", "^GSPC"), ("??? (NASDAQ)", "^IXIC")]
+    results = []
+    for label, sym in targets:
+        try:
+            hist = _yf.Ticker(sym).history(period="5d")
+            if len(hist) >= 2:
+                prev_c = float(hist["Close"].iloc[-2])
+                curr_c = float(hist["Close"].iloc[-1])
+                chg_pct = ((curr_c - prev_c) / prev_c) * 100.0
+                results.append((label, f"{curr_c:,.2f}", f"{chg_pct:+.2f}%", chg_pct >= 0))
+            elif len(hist) == 1:
+                curr_c = float(hist["Close"].iloc[-1])
+                results.append((label, f"{curr_c:,.2f}", "0.00%", True))
+            else:
+                results.append((label, "-", "0.00%", True))
+        except Exception:
+            results.append((label, "-", "0.00%", True))
+    return results
+
+def _render_market_index_banner(market_type: str):
+    idx_list = _fetch_market_indices(market_type)
+    cols = st.columns(len(idx_list))
+    for col, (label, val, pct, is_up) in zip(cols, idx_list):
+        color = "#10b981" if is_up else "#ef4444"
+        col.markdown(
+            f"""<div style="background:rgba(30,41,59,0.65);border:1px solid rgba(148,163,184,0.2);border-radius:10px;padding:10px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#94a3b8;font-size:0.88rem;font-weight:600;">?? {label}</span>
+                <span><strong style="color:#f8fafc;font-size:1.05rem;margin-right:8px;">{val}</strong><span style="color:{color};font-weight:700;font-size:0.9rem;">{pct}</span></span>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
 import yfinance as yf
 
 import config
