@@ -1,4 +1,43 @@
 import json
+
+import streamlit as _st
+
+def _is_admin_user() -> bool:
+    try:
+        return bool(_st.session_state.get("authenticated") and _st.session_state.get("user_role") == "admin")
+    except Exception:
+        return False
+
+def _has_real_holdings(data) -> bool:
+    if not isinstance(data, dict):
+        return False
+    for v in data.values():
+        if isinstance(v, dict) and len(v) > 0:
+            return True
+    return False
+
+def _get_secret_portfolio():
+    empty_pf = {"?? ?? (KRX)": {}, "?? ?? (??)": {}}
+    if not _is_admin_user():
+        return empty_pf
+    if "admin_portfolio_cache" in _st.session_state and _has_real_holdings(_st.session_state["admin_portfolio_cache"]):
+        return _st.session_state["admin_portfolio_cache"]
+    raw = ""
+    try:
+        if "PORTFOLIO_JSON" in _st.secrets:
+            raw = _st.secrets["PORTFOLIO_JSON"]
+    except Exception:
+        raw = os.getenv("PORTFOLIO_JSON", "")
+    if raw:
+        try:
+            data = json.loads(raw) if isinstance(raw, str) else raw
+            if _has_real_holdings(data):
+                _st.session_state["admin_portfolio_cache"] = data
+                return data
+        except Exception:
+            pass
+    return empty_pf
+
 import os
 import pandas as pd
 import plotly.graph_objects as go
